@@ -9,10 +9,18 @@ async function main() {
     await fundMe.waitForDeployment();
     console.log(`contract has been deployed successfully, contract address is ${fundMe.target}`);
 
-    // verify fundMe(只有部署在测试完上才需要验证合约，部署在本地不需要验证)
-    await fundMe.deploymentTransaction.wait(5);
-    console.log("waiting for 5 confirmations");
-    await verifyFundMe(fundMe.target, [10])
+
+    // 11155111为sepolia测试网id
+    // 只有合约部署在测试网络上才需要验证合约
+    if (hre.network.config.chainId === 11155111) {
+        // verify fundMe(只有部署在测试完上才需要验证合约，部署在本地不需要验证)
+        console.log("waiting for 5 confirmations");
+        // 等待5个区块，目的是等待一定时间后，让区块浏览器把当前交易收录进去
+        await fundMe.deploymentTransaction().wait(5);
+        await verifyFundMe(fundMe.target, [10])
+    } else {
+        console.log("verification skipped...")
+    }
 }
 
 /**
